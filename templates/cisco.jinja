@@ -1,0 +1,86 @@
+!
+version 12.2
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname {{ hostname }}
+!
+boot-start-marker
+boot system flash bootflash:cat4500-entservicesk9-mz.122-54.SG.bin
+boot-end-marker
+!
+enable password 7 123A5D19161C440E24
+!
+username svwh password 7 047853080B36044407
+!
+!
+aaa new-model
+!
+! 
+aaa authentication login default group tacacs+ local
+aaa authentication enable default group tacacs+ enable
+aaa authorization exec default group tacacs+ none 
+aaa accounting commands 0 default start-stop group tacacs+
+aaa accounting commands 1 default start-stop group tacacs+
+aaa accounting commands 2 default start-stop group tacacs+
+aaa accounting commands 3 default start-stop group tacacs+
+aaa accounting commands 4 default start-stop group tacacs+
+aaa accounting commands 5 default start-stop group tacacs+
+aaa accounting commands 6 default start-stop group tacacs+
+aaa accounting commands 7 default start-stop group tacacs+
+aaa accounting commands 8 default start-stop group tacacs+
+aaa accounting commands 9 default start-stop group tacacs+
+aaa accounting commands 10 default start-stop group tacacs+
+aaa accounting commands 11 default start-stop group tacacs+
+aaa accounting commands 12 default start-stop group tacacs+
+aaa accounting commands 13 default start-stop group tacacs+
+aaa accounting commands 14 default start-stop group tacacs+
+aaa accounting commands 15 default start-stop group tacacs+
+!
+!
+!
+aaa session-id common
+ip subnet-zero
+ip domain-name svwh.net
+ip name-server 208.166.60.10
+ip name-server 208.166.60.11
+ip vrf mgmtVrf
+!
+!
+!
+ipv6 unicast-routing
+vtp domain NEPHOSCALE
+vtp mode off
+!
+!
+!
+power redundancy-mode redundant
+!
+!
+!
+!
+spanning-tree mode rapid-pvst
+spanning-tree logging
+spanning-tree extend system-id
+spanning-tree uplinkfast
+no spanning-tree vlan 1,256-4094
+spanning-tree vlan 1-255 forward-time 5
+spanning-tree vlan 1-255 max-age 6
+!{% for loopback_net in loopback: %}
+interface Loopback{{ loopback_net.id }}
+ip address {{ loopback_net.ipaddress }} {{ loopback_net.mask }}
+shutdown {{ shutdown }}
+ipv6 {{ loopback_net.ipv6 }}
+ipv6 {{ loopback_net.ipv6_enable }}
+!{% endfor %}
+!{% for vlan_net in vlan: %}
+interface Vlan{{ vlan_net.vlanid }}
+description {{ vlan_net.description }}
+ip address {{ vlan_net.ipaddress }} {{ vlan_net.mask }}
+ipv6 address {{ vlan_net.ipv6 }}
+ipv6 {{ vlan_net.ipv6_enable }}
+!{% endfor %}
+end
