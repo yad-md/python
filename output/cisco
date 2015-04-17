@@ -12,9 +12,9 @@ boot-start-marker
 boot system flash bootflash:cat4500-entservicesk9-mz.122-54.SG.bin
 boot-end-marker
 !
-enable password 7 123A5D19161C440E24
+enable password 7 123456789012345678
 !
-username svwh password 7 047853080B36044407
+username root password 7 123456789012345678
 !
 !
 aaa new-model
@@ -71,32 +71,58 @@ spanning-tree vlan 1-255 forward-time 5
 spanning-tree vlan 1-255 max-age 6
 !
 interface Loopback0
-ip address 214.56.18.34 255.255.255.255
-ipv6 2607:F258:102:FE14::B/128
-ipv6 enable
+ip address loopback description 214.56.18.34
+ipv6 255.255.255.255
+ipv6 fe80::200:f8ff: fe21:67cf/128
 !
 interface Loopback1
-ip address 14.250.180.134 255.255.255.255
-ipv6 2607:F258:102:FE14::B/128
-ipv6 enable
+ip address loopback description 14.250.180.134
+ipv6 255.255.255.255
+ipv6 fe80::200:f8ff: fe21:67cf/128
 !
-
+interface Port-channel63
+description border01.sjc01
+switchport
+switchport trunk encapsulation dot1q
+switchport trunk allowed vlan 1,10-12,20,30,50,51,80,90-92,100,118-139,277
+switchport mode trunk
+switchport nonegotiate
+load-interval 30
+mtu 9180
+!
+interface FastEthernet1
+ip vrf forwarding EIGAIS
+no ip address
+speed auto
+duplex auto
+!
+interface GigabitEthernet1/1
+description g9/32.border02.sjc01
+switchport trunk encapsulation dot1q
+switchport trunk allowed vlan 1,10-12,20,30,50,51,80,90-92,100,118-139,278
+switchport mode trunk
+switchport nonegotiate
+load-interval 30
+media-type rj45
+channel group 64 mode active
+spanning-tree portfast
+!
 interface Vlan1
-description description
+description vlan1 description
 ip address 10.10.10.1 255.255.255.0
-ipv6 address 2607:F258:102:FE14::B/128
+ipv6 address fe80::200:f8ff: fe21:67cf/128
 ipv6 enable
 !
 interface Vlan2
-description 
+description vlan2 description
 ip address 20.20.20.1 255.255.255.0
-ipv6 address 2607:F258:102:FE14::B/128
+ipv6 address fe80::200:f8ff: fe21:67cf/128
 ipv6 enable
 !
 interface Vlan3
-description something
+description vlan3 description
 ip address 14.14.14.1 255.255.255.0
-ipv6 address 2607:F258:102:FE14::B/128
+ipv6 address fe80::200:f8ff: fe21:67cf/128
 ipv6 enable
 !
 end

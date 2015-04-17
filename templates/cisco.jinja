@@ -12,9 +12,9 @@ boot-start-marker
 boot system flash bootflash:cat4500-entservicesk9-mz.122-54.SG.bin
 boot-end-marker
 !
-enable password 7 123A5D19161C440E24
+enable password 7 123456789012345678
 !
-username svwh password 7 047853080B36044407
+username root password 7 123456789012345678
 !
 !
 aaa new-model
@@ -72,15 +72,44 @@ spanning-tree vlan 1-255 max-age 6
 !{% for loopback_net in loopback: %}
 interface Loopback{{ loopback_net.id }}
 ip address {{ loopback_net.ipaddress }} {{ loopback_net.mask }}
-shutdown {{ shutdown }}
 ipv6 {{ loopback_net.ipv6 }}
 ipv6 {{ loopback_net.ipv6_enable }}
-!{% endfor %}
-!{% for vlan_net in vlan: %}
+!{% endfor %}{% for port_net in portchannel: %}
+interface Port-channel{{ port_net.id }}
+description {{ port_net.description }}
+switchport
+switchport trunk encapsulation {{ port_net.trunk_encapsulation }}
+switchport trunk allowed vlan {{ port_net.trunk_allowed_vlan }}
+switchport mode {{ port_net.switchport_mode }}{% if port_net.switchport_nonegotiate %}
+switchport {{ port_net.switchport_nonegotiate }}{% endif %}{% if port_net.load_interval %}
+load-interval {{ port_net.load_interval }}{% endif %}{% if port_net.mtu != "" %}
+mtu {{ port_net.mtu }}{% endif %}{% if port_net.shutdown == "shutdown" %}
+shutdown {{ port_net.shutdown }}{% endif %}
+!{% endfor %}{% for fast_net in fastethernet: %}
+interface FastEthernet{{ fast_net.id }}{% if fast_net.vrf_forwarding %}
+ip vrf forwarding {{ fast_net.vrf_forwarding }}{% endif %}
+{%if fast_net.ipaddress == "" %}no ip address{% else %}ip address {{ fast_net.ipaddress }} {{ fast_net.mask }}{% endif %}
+speed auto
+duplex auto{% if fast_net.shutdown == "shutdown" %}
+shutdown {{ fast_net.shutdown }}{% endif %}
+!{% endfor %}{% for giga_net in gigabit: %}
+interface GigabitEthernet{{ giga_net.id }}
+description {{ giga_net.description }}
+switchport trunk encapsulation {{ giga_net.trunk_encapsulation }}
+switchport trunk allowed vlan {{ giga_net.trunk_allowed_vlan }}
+switchport mode {{ giga_net.switchport_mode }}{% if giga_net.switchport_nonegotiate %}
+switchport {{ giga_net.switchport_nonegotiate }}{% endif %}
+load-interval {{ giga_net.load_interval }}{% if giga_net.media_type %}
+media-type {{ giga_net.media_type }}{% endif %}
+channel group {{ giga_net.channel_group }} mode {{ giga_net.channel_group_mode }}
+spanning-tree {{ giga_net.spanning_tree }}{% if giga_net.shutdown == "shutdown" %}
+shutdown {{ giga_net.shutdown }}{% endif %}
+!{% endfor %}{% for vlan_net in vlan: %}
 interface Vlan{{ vlan_net.vlanid }}
 description {{ vlan_net.description }}
 ip address {{ vlan_net.ipaddress }} {{ vlan_net.mask }}
 ipv6 address {{ vlan_net.ipv6 }}
-ipv6 {{ vlan_net.ipv6_enable }}
+ipv6 {{ vlan_net.ipv6_enable }}{% if vlan_net == "shutdown" %}
+shutdown {{ vlan_net.shutdown }}{% endif %}
 !{% endfor %}
 end
